@@ -40,4 +40,4 @@ jobs:
           chmod +x ./engines/stockfish-ubuntu-x86-64-avx2
 
       - name: Running bot
-        run: python3 user_interface.py "join royalracer-fans" "tournament TwMONwcB royalracer-fans""
+        run: python3 user_interface.py "join royalracer-fans" "tournament TwMONwcB royalracer-fans"
