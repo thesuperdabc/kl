@@ -12,7 +12,7 @@ engines:
       Hash: 4096                    # Max memory (in megabytes) the engine can allocate.
       Move Overhead: 200
     limits:
-      time: 5.0
+      time: 6.0
       depth: 32
       nodes: 4000000
 # variants:                               # Engine used for variants when no suitable special engine is configured.
@@ -198,8 +198,8 @@ messages:
   # Any other words in curly braces will be removed.
   greeting: "GoodLuck"                                                              # Message sent to the opponent at the 
   goodbye: "GGs , ezz"                                             # Message sent to the opponent after the end 
-  greeting_spectators: " ITZ {engine} in {me} competing for more depth with @{opponent} Type !help for a list of commands."                            # Message sent to the spectators at the beginning of a game.
-  goodbye_spectators: "SIMULATION TERMINATED### @{opponent} Thanks For watching ,{me} signing off!"                                           # Message sent to the spectators after the end of a game.
+  greeting_spectators: " GG! Type !help for a list of commands."                            # Message sent to the spectators at the beginning of a game.
+  goodbye_spectators: "GG!"                                           # Message sent to the spectators after the end of a game.
 
 # whitelist:                              # List of users whose challenges are always accepted.
 #   - Username1
