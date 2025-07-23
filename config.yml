@@ -170,26 +170,10 @@ matchmaking:
   selection: cyclic                       # Matchmkaing type selection is one of "weighted_random", "sequential" or "cyclic
   types:                                  # Matchmaking types of which one is selected before each game.
     bullet:                               # Arbitrary name of the matchmaking type. Names must be unique.
-      tc: 30+0     
-    bulle2:
+      tc: 0.5+0     
+    blitz:
       tc: 3+0
-    bc:
-      tc: 5+0
-    bm3:
-      tc: 1+0
-    gulugulu:
-      tc: 1+1
-    guliguli:
-      tc: 10+0
-    hvj:
-      tc: 1.5+0
-    win:
-      tc: 8+0
-    loss:
-      tc: 2+0
-    drum: 
-      tc: 2+1
-      variant: chess960
+#     variant: chess960
     
   # Time control in initial_minutes+increment_seconds format.
 #   casual_chess960:
@@ -212,8 +196,8 @@ messages:
   #   {cpu} to insert CPU information
   #   {ram} to insert RAM size
   # Any other words in curly braces will be removed.
-  greeting: "Konnichiwa guzaimase! ❤️‍🔥Using help of {engine}Type !help to glimpse my arsenal.Best of luck"                                                              # Message sent to the opponent at the 
-  goodbye: "GGs , ezz.May we meet again , may i win again * 💶{me} signing off!"                                             # Message sent to the opponent after the end 
+  greeting: "GoodLuck"                                                              # Message sent to the opponent at the 
+  goodbye: "GGs , ezz"                                             # Message sent to the opponent after the end 
   greeting_spectators: " ITZ {engine} in {me} competing for more depth with @{opponent} Type !help for a list of commands."                            # Message sent to the spectators at the beginning of a game.
   goodbye_spectators: "SIMULATION TERMINATED### @{opponent} Thanks For watching ,{me} signing off!"                                           # Message sent to the spectators after the end of a game.
 
