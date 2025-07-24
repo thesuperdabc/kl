@@ -8,9 +8,9 @@ engines:
     silence_stderr: false                 # Suppresses stderr output.
     move_overhead_multiplier: 21.0  # Increase if your bot flags games too often. Default move overhead is 1 second per 1 minute initital time.
     uci_options:                          # Arbitrary UCI options passed to the engine. (Commenting allowed)
-      Threads: 4                          # Max CPU threads the engine can use.
+      Threads: 8                          # Max CPU threads the engine can use.
       Hash: 2048                    # Max memory (in megabytes) the engine can allocate.
-      Move Overhead: 200
+      Move Overhead: 100
     limits:
 #      time: 3.0
 #      depth: 20
@@ -57,17 +57,17 @@ gaviota:
 
 opening_books:
   enabled: true                           # Activate opening books.
-  priority: 999                           # Priority with which this move source is used. Higher priority is used first.
+  priority: 400                           # Priority with which this move source is used. Higher priority is used first.
   books:
-#   bullet:
-#     selection: best_move                # Move selection is one of "weighted_random", "uniform_random" or "best_move".
-#     names:                              # List of names of books to use in bullet.
-#       - Titans
-#       - DefaultBook
-#   standard_black:
-#     selection: best_move                # Move selection is one of "weighted_random", "uniform_random" or "best_move".
-#     names:                              # List of names of books to use as black.
-#       - Titans
+    bullet:
+      selection: best_move                # Move selection is one of "weighted_random", "uniform_random" or "best_move".
+      names:                              # List of names of books to use in bullet.
+        - probook
+        - DefaultBook
+    standard_black:
+      selection: best_move                # Move selection is one of "weighted_random", "uniform_random" or "best_move".
+      names:                              # List of names of books to use as black.
+        - probook
     standard:
       selection: best_move      # Move selection is one of "weighted_random", "uniform_random" or "best_move".
   #    max_depth: 40                       # Half move max depth. (Comment this line for max depth)
@@ -75,7 +75,6 @@ opening_books:
        - optimus2409
        - optimus4
        - Opimus3.1
-       - Perfect2023
        - Titans
 #   Use the same pattern for 'bullet', 'blitz', 'rapid', 'classical',
 #   'antichess', 'atomic', 'chess960', 'crazyhouse', 'horde', 'kingofthehill', 'racingkings' and '3check' as well.
@@ -213,5 +212,5 @@ books:                                    # Names of the opening books (to be us
   Titans: "engines/Titans.bin"
   optimus2409: "./engines/optimus2409.bin"
   optimus4:  "./engines/OPTIMUS4.bin"
-  Perfect2023: "./engines/Perfect2023.bin"
+  probook: "./engines/probook.bin"
   Opimus3.1: "./engines/optimus32.bin"
