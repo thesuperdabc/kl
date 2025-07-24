@@ -1,5 +1,3 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Run bot
 
 # Controls when the workflow will run
@@ -17,33 +15,29 @@ concurrency:
   group: ${{ github.ref }}
   cancel-in-progress: true
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
       - name: Python Dependency Installation
         uses: py-actions/py-dependency-install@v4.0.0
-        
+
       - name: Injection For my Repo
         run: sed -i "s/TokenTimeIsBackBuddyss/${{ secrets.LICHESS_KEY }}/g" config.yml
-          
+
       - name: Download and Extract Stockfish
         run: |
           mkdir -p ./engines
           wget -O stockfish.zip http://abrok.eu/stockfish/latest/linux/stockfish_x64_avx2.zip
           unzip stockfish.zip -d ./engines
-          mv ./engines/stockfish_x64_avx2 ./engines/stockfish-ubuntu-x86-64-avx2
+          ls -l ./engines
+          mv ./engines/stockfish_*_x64_avx2 ./engines/stockfish-ubuntu-x86-64-avx2
           chmod +x ./engines/stockfish-ubuntu-x86-64-avx2
           rm stockfish.zip
 
-          
+      # Run the bot
       - name: Running bot
         run: python3 user_interface.py "matchmaking"
