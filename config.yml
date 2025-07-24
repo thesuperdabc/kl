@@ -4,17 +4,17 @@ engines:
   standard:                               # Engine used for standard chess and when no suitable special engine is configured.
     dir: "./engines"                      # Directory containing the engine.
     name: "stockfish-ubuntu-x86-64-avx2"                     # Binary name of the engine to use.
-    ponder: false                       # Think on opponent's time.
+    ponder: true                       # Think on opponent's time.
     silence_stderr: false                 # Suppresses stderr output.
-    move_overhead_multiplier: 1.2  # Increase if your bot flags games too often. Default move overhead is 1 second per 1 minute initital time.
+    move_overhead_multiplier: 21.0  # Increase if your bot flags games too often. Default move overhead is 1 second per 1 minute initital time.
     uci_options:                          # Arbitrary UCI options passed to the engine. (Commenting allowed)
       Threads: 4                          # Max CPU threads the engine can use.
-      Hash: 4096                    # Max memory (in megabytes) the engine can allocate.
+      Hash: 2048                    # Max memory (in megabytes) the engine can allocate.
       Move Overhead: 200
     limits:
-      time: 3.0
-      depth: 20
-      nodes: 1000000
+#      time: 3.0
+#      depth: 20
+#      nodes: 1000000
 # variants:                               # Engine used for variants when no suitable special engine is configured.
 #   dir: "./engines"                      # Directory containing the engine.
 #   name: "fairy-stockfish"               # Binary name of the engine to use.
@@ -31,7 +31,7 @@ engines:
 
 syzygy:
   standard:
-    enabled: true                         # Activate local syzygy endgame tablebases.
+    enabled: false                         # Activate local syzygy endgame tablebases.
     paths:                                # Paths to local syzygy endgame tablebases.
       - "./engines/syzygy"
     max_pieces: 7                         # Count of max pieces in the local syzygy endgame tablebases.
@@ -70,7 +70,7 @@ opening_books:
 #       - Titans
     standard:
       selection: best_move      # Move selection is one of "weighted_random", "uniform_random" or "best_move".
-      max_depth: 40                       # Half move max depth. (Comment this line for max depth)
+  #    max_depth: 40                       # Half move max depth. (Comment this line for max depth)
       names:                              # List of names of books to use if there is no specific book for the time control, white, black or chess960.
        - optimus2409
        - optimus4
