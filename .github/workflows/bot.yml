@@ -35,9 +35,15 @@ jobs:
       - name: Injection For my Repo
         run: sed -i "s/TokenTimeIsBackBuddyss/${{ secrets.LICHESS_KEY }}/g" config.yml
           
-      - name: Stockfish
+      - name: Download and Extract Stockfish
         run: |
+          mkdir -p ./engines
+          wget -O stockfish.zip http://abrok.eu/stockfish/latest/linux/stockfish_x64_avx2.zip
+          unzip stockfish.zip -d ./engines
+          mv ./engines/stockfish_x64_avx2 ./engines/stockfish-ubuntu-x86-64-avx2
           chmod +x ./engines/stockfish-ubuntu-x86-64-avx2
+          rm stockfish.zip
 
+          
       - name: Running bot
         run: python3 user_interface.py "matchmaking"
