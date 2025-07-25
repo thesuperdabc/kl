@@ -132,7 +132,7 @@ resign:
   against_humans: false                    # Activate whether these settings should apply against humans.
 
 challenge:                                # Incoming challenges. (Commenting allowed)
-  concurrency: 2                          # Number of games to play simultaneously.
+  concurrency: 5                          # Number of games to play simultaneously.
   bullet_with_increment_only: false       # Whether bullet games against BOTs should only be accepted with increment.
 # min_increment: 0                        # Minimum amount of increment to accept a challenge.
 # max_increment: 180                      # Maximum amount of increment to accept a challenge.
@@ -164,7 +164,7 @@ challenge:                                # Incoming challenges. (Commenting all
 #   - rated                               # Rated games
 
 matchmaking:
-  delay: 60                               # Time in seconds the bot must be idle before a new challenge is started.
+  delay: 260                               # Time in seconds the bot must be idle before a new challenge is started.
   timeout: 30                             # Time until a challenge is canceled.
   selection: cyclic                       # Matchmkaing type selection is one of "weighted_random", "sequential" or "cyclic
   types:                                  # Matchmaking types of which one is selected before each game.
@@ -196,9 +196,9 @@ messages:
   #   {ram} to insert RAM size
   # Any other words in curly braces will be removed.
   greeting: "GoodLuck"                                                              # Message sent to the opponent at the 
-  goodbye: "GGs , ezz"                                             # Message sent to the opponent after the end 
-  greeting_spectators: " GG! Type !help for a list of commands."                            # Message sent to the spectators at the beginning of a game.
-  goodbye_spectators: "GG!"                                           # Message sent to the spectators after the end of a game.
+  goodbye: "Bye!"                                             # Message sent to the opponent after the end 
+  greeting_spectators: "Type !help for a list of commands."                            # Message sent to the spectators at the beginning of a game.
+  goodbye_spectators: "Thx!"                                           # Message sent to the spectators after the end of a game.
 
 # whitelist:                              # List of users whose challenges are always accepted.
 #   - Username1
@@ -210,9 +210,9 @@ messages:
 
 auto_rematch:
   enabled: true                           # Whether to automatically offer rematches after games
-  max_rematches: 3                        # Maximum number of consecutive rematches with the same opponent
+  max_rematches: 10                        # Maximum number of consecutive rematches with the same opponent
   delay: 2                                # Delay in seconds before offering a rematch
-  message: "Want to play again?"          # Optional message to send when offering a rematch
+  message: "Want to play again? I will beat you!"          # Optional message to send when offering a rematch
   alternate_colors: true                  # Whether to alternate colors in rematches
   only_after_wins: false                  # Whether to only offer rematches after wins
   only_after_losses: false                # Whether to only offer rematches after losses
