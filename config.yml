@@ -208,6 +208,17 @@ messages:
 #   - Stockfish-MEDIUM
 #   - Username2
 
+auto_rematch:
+  enabled: true                           
+  max_rematches: 2                       
+  delay: 2                                
+  message: "Want to play again?"          
+  alternate_colors: true                  
+  only_after_wins: false                  
+  only_after_losses: false                
+  only_against_bots: false                
+  only_against_humans: false              
+
 books:                                    # Names of the opening books (to be used above in the opening_books section) and paths to the opening books.
   Titans: "engines/Titans.bin"
   optimus2409: "./engines/optimus2409.bin"
