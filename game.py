@@ -168,6 +168,14 @@ class Game:
         
     def _should_offer_rematch(self, game_state: dict[str, Any], info: Game_Information) -> bool:
         """Determine if a rematch should be offered based on configuration."""
+        # Check if auto-rematch is enabled in the configuration
+        if hasattr(self.config, 'auto_rematch'):
+            if not self.config.auto_rematch.enabled:
+                return False
+        else:
+            # If auto_rematch is not in the config, don't offer rematch
+            return False
+            
         # Don't rematch aborted games
         if self.was_aborted:
             return False
@@ -180,12 +188,35 @@ class Game:
         if self.game_manager:
             player_pair = frozenset([self.username.lower(), opponent_username.lower()])
             rematch_count = self.game_manager.rematch_counts.get(player_pair, 0)
-            max_rematches = getattr(self.config, 'auto_rematch', {}).get('max_rematches', 3)
+            max_rematches = 3
+            if hasattr(self.config, 'auto_rematch'):
+                max_rematches = self.config.auto_rematch.max_rematches
             if rematch_count >= max_rematches:
                 print(f"Maximum rematches ({max_rematches}) reached with {opponent_username}")
                 return False
         # Fall back to instance variable if game manager not available
         elif self.rematch_count >= 3:
+            return False
+            
+        # Check if we should only rematch after wins
+        if hasattr(self.config, 'auto_rematch') and self.config.auto_rematch.only_after_wins:
+            winner = game_state.get('winner')
+            if not winner or (winner == 'white' and not is_white) or (winner == 'black' and is_white):
+                return False
+                
+        # Check if we should only rematch after losses
+        if hasattr(self.config, 'auto_rematch') and self.config.auto_rematch.only_after_losses:
+            winner = game_state.get('winner')
+            if not winner or (winner == 'white' and is_white) or (winner == 'black' and not is_white):
+                return False
+                
+        # Check if we should only rematch against bots
+        opponent_title = info.black_title if is_white else info.white_title
+        if hasattr(self.config, 'auto_rematch') and self.config.auto_rematch.only_against_bots and opponent_title != 'BOT':
+            return False
+            
+        # Check if we should only rematch against humans
+        if hasattr(self.config, 'auto_rematch') and self.config.auto_rematch.only_against_humans and opponent_title == 'BOT':
             return False
             
         return True
@@ -197,12 +228,16 @@ class Game:
         opponent_username = info.black_name if is_white else info.white_name
         
         # Send rematch message if configured
-        rematch_message = getattr(self.config, 'auto_rematch', {}).get('message', None)
+        rematch_message = None
+        if hasattr(self.config, 'auto_rematch'):
+            rematch_message = self.config.auto_rematch.message
         if rematch_message:
             await self.api.send_chat_message(self.game_id, 'player', rematch_message)
         
         # Wait for configured delay
-        delay = getattr(self.config, 'auto_rematch', {}).get('delay', 2)
+        delay = 2
+        if hasattr(self.config, 'auto_rematch'):
+            delay = self.config.auto_rematch.delay
         await asyncio.sleep(delay)
         
         # Use the dedicated rematch API which opens in the same tab
@@ -216,7 +251,9 @@ class Game:
             player_pair = frozenset([self.username.lower(), opponent_username.lower()])
             current_count = self.game_manager.rematch_counts.get(player_pair, 0)
             self.game_manager.rematch_counts[player_pair] = current_count + 1
-            max_rematches = getattr(self.config, 'auto_rematch', {}).get('max_rematches', 3)
+            max_rematches = 3
+            if hasattr(self.config, 'auto_rematch'):
+                max_rematches = self.config.auto_rematch.max_rematches
             print(f'Rematch {current_count + 1}/{max_rematches} with {opponent_username}')
             
             # Set a flag in game manager to indicate we're in a rematch
@@ -237,7 +274,9 @@ class Game:
             from enums import Challenge_Color
             
             # Determine color for rematch
-            alternate_colors = getattr(self.config, 'auto_rematch', {}).get('alternate_colors', True)
+            alternate_colors = True
+            if hasattr(self.config, 'auto_rematch'):
+                alternate_colors = self.config.auto_rematch.alternate_colors
             if alternate_colors:
                 color = Challenge_Color.BLACK if is_white else Challenge_Color.WHITE
             else:
