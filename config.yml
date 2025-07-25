@@ -209,15 +209,15 @@ messages:
 #   - Username2
 
 auto_rematch:
-  enabled: true                           
-  max_rematches: 2                       
-  delay: 2                                
-  message: "Want to play again?"          
-  alternate_colors: true                  
-  only_after_wins: false                  
-  only_after_losses: false                
-  only_against_bots: false                
-  only_against_humans: false              
+  enabled: true                           # Whether to automatically offer rematches after games
+  max_rematches: 3                        # Maximum number of consecutive rematches with the same opponent
+  delay: 2                                # Delay in seconds before offering a rematch
+  message: "Want to play again?"          # Optional message to send when offering a rematch
+  alternate_colors: true                  # Whether to alternate colors in rematches
+  only_after_wins: false                  # Whether to only offer rematches after wins
+  only_after_losses: false                # Whether to only offer rematches after losses
+  only_against_bots: false                # Whether to only offer rematches against bots
+  only_against_humans: false              # Whether to only offer rematches against humans
 
 books:                                    # Names of the opening books (to be used above in the opening_books section) and paths to the opening books.
   Titans: "engines/Titans.bin"
