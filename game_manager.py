@@ -36,6 +36,12 @@ class Game_Manager:
         self.unstarted_tournaments: dict[str, Tournament] = {}
         self.tournaments_to_join: deque[Tournament] = deque()
         self.tournaments: dict[str, Tournament] = {}
+        # Dictionary to track rematch counts between pairs of players
+        self.rematch_counts: dict[frozenset[str], int] = {}
+        # Flag to indicate if we're in a rematch
+        self.in_rematch = False
+        # Current rematch opponent
+        self.rematch_opponent = None
 
     def stop(self):
         self.is_running = False
@@ -65,6 +71,12 @@ class Game_Manager:
                 await self._join_tournament(tournament)
 
             while challenge := self._get_next_challenge():
+                # If we're in a rematch, only accept challenges from the rematch opponent
+                if self.in_rematch and challenge.challenger_name != self.rematch_opponent:
+                    print(f"Declining challenge from {challenge.challenger_name} because we're in a rematch with {self.rematch_opponent}")
+                    await self.api.decline_challenge(challenge.challenge_id, "later")
+                    self.open_challenges.remove(challenge)
+                    continue
                 await self._accept_challenge(challenge)
 
             while challenge_request := self._get_next_challenge_request():
@@ -85,6 +97,12 @@ class Game_Manager:
         return len(self.tasks) + len(self.tournaments) + self.reserved_game_spots >= self.config.challenge.concurrency
 
     def add_challenge(self, challenge: Challenge) -> None:
+        # If we're in a rematch, only add challenges from the rematch opponent
+        if self.in_rematch and challenge.challenger_name != self.rematch_opponent:
+            print(f"Declining challenge from {challenge.challenger_name} because we're in a rematch with {self.rematch_opponent}")
+            asyncio.create_task(self.api.decline_challenge(challenge.challenge_id, "later"))
+            return
+            
         if challenge not in self.open_challenges:
             self.open_challenges.append(challenge)
             self.changed_event.set()
@@ -109,6 +127,11 @@ class Game_Manager:
         self.changed_event.set()
 
     def start_matchmaking(self) -> None:
+        # Don't start matchmaking if we're in a rematch
+        if self.in_rematch:
+            print(f"Not starting matchmaking because we're in a rematch with {self.rematch_opponent}")
+            return
+            
         self.matchmaking_enabled = True
         self._set_next_matchmaking(1)
         self.changed_event.set()
@@ -213,6 +236,12 @@ class Game_Manager:
             self.matchmaking.on_game_finished(game.was_aborted)
             self.current_matchmaking_game_id = None
 
+        # Reset rematch flags when a game ends
+        if len(self.tasks) == 0:
+            self.in_rematch = False
+            self.rematch_opponent = None
+            print("Rematch session ended, now accepting all challenges")
+
         self._set_next_matchmaking(self.config.matchmaking.delay)
         self.changed_event.set()
 
@@ -220,7 +249,7 @@ class Game_Manager:
         if self.reserved_game_spots > 0:
             self.reserved_game_spots -= 1
 
-        game = Game(self.api, self.config, self.username, game_event['id'])
+        game = Game(self.api, self.config, self.username, game_event['id'], self)
         task = asyncio.create_task(game.run())
         task.add_done_callback(self._task_callback)
         self.tasks[task] = game
@@ -243,6 +272,11 @@ class Game_Manager:
     async def _check_matchmaking(self) -> None:
         self.next_matchmaking = None
         self.is_rate_limited = False
+
+        # Don't do matchmaking if we're in a rematch
+        if self.in_rematch:
+            print(f"Skipping matchmaking because we're in a rematch with {self.rematch_opponent}")
+            return
 
         if self.current_matchmaking_game_id:
             return
