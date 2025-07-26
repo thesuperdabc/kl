@@ -208,9 +208,9 @@ messages:
 #   - Stockfish-MEDIUM
 #   - Username2
   auto_rematch:
-    enabled: false                           # Whether to automatically offer rematches after games
-    max_rematches: 3                        # Maximum number of consecutive rematches with the same opponent
-    delay: 2                                # Delay in seconds before offering a rematch
+    enabled: true                           # Whether to automatically offer rematches after games
+    max_rematches: 1                        # Maximum number of consecutive rematches with the same opponent
+    delay: 1                                # Delay in seconds before offering a rematch
     message: "Want to play again? I will beat you!"          # Optional message to send when offering a rematch
     alternate_colors: true                  # Whether to alternate colors in rematches
     only_after_wins: false                  # Whether to only offer rematches after wins
