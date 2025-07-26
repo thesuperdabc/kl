@@ -207,6 +207,16 @@ messages:
 # blacklist:                              # List of users who are not challenged and whose challenges are declined.
 #   - Stockfish-MEDIUM
 #   - Username2
+  auto_rematch:
+    enabled: false                           # Whether to automatically offer rematches after games
+    max_rematches: 3                        # Maximum number of consecutive rematches with the same opponent
+    delay: 2                                # Delay in seconds before offering a rematch
+    message: "Want to play again? I will beat you!"          # Optional message to send when offering a rematch
+    alternate_colors: true                  # Whether to alternate colors in rematches
+    only_after_wins: false                  # Whether to only offer rematches after wins
+    only_after_losses: false                # Whether to only offer rematches after losses
+    only_against_bots: false                # Whether to only offer rematches against bots
+    only_against_humans: false              # Whether to only offer rematches against humans
 
 books:                                    # Names of the opening books (to be used above in the opening_books section) and paths to the opening books.
   Titans: "engines/Titans.bin"
