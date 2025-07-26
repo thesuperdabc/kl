@@ -210,7 +210,7 @@ messages:
 
 auto_rematch:
   enabled: true                           # Whether to automatically offer rematches after games
-  max_rematches: 10                        # Maximum number of consecutive rematches with the same opponent
+  max_rematches: 3                        # Maximum number of consecutive rematches with the same opponent
   delay: 2                                # Delay in seconds before offering a rematch
   message: "Want to play again? I will beat you!"          # Optional message to send when offering a rematch
   alternate_colors: true                  # Whether to alternate colors in rematches
