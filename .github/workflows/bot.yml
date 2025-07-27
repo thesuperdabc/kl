@@ -39,7 +39,7 @@ jobs:
           rm stockfish.zip
 
       - name: Make Fairy-Stockfish executable
-        run: chmod +x ./engines/fsf
+        run: chmod +x ./engines/fairy-sf
 
       # Run the bot
       - name: Running bot
