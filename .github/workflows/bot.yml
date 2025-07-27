@@ -38,6 +38,9 @@ jobs:
           chmod +x ./engines/stockfish-ubuntu-x86-64-avx2
           rm stockfish.zip
 
+      - name: Make Fairy-Stockfish executable
+        run: chmod +x ./engines/fsf
+
       # Run the bot
       - name: Running bot
-        run: python3 user_interface.py "tournament qHschbP0"
+        run: python3 user_interface.py -u
