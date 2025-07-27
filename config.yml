@@ -17,7 +17,7 @@ engines:
 #      nodes: 1000000
   variants:                               # Engine used for variants when no suitable special engine is configured.
     dir: "./engines"                      # Directory containing the engine.
-    name: "fsf"               # Binary name of the engine to use.
+    name: "fairy-sf"               # Binary name of the engine to use.
     ponder: true                          # Think on opponent's time.
     silence_stderr: false                 # Suppresses stderr output.
     move_overhead_multiplier: 1.0         # Increase if your bot flags games too often. Default move overhead is 1 second per 1 minute initital time.
@@ -25,6 +25,7 @@ engines:
       Threads: 6                          # Max CPU threads the engine can use.
       Hash: 2048                           # Max memory (in megabytes) the engine can allocate.
       Move Overhead: 100                  # Increase if your bot flags games too often.
+      Use NNUE: true
       EvalFile: "3check-cb5f517c228b.nnue:antichess-dd3cbe53cd4e.nnue:atomic-2cf13ff256cc.nnue:crazyhouse-8ebf84784ad2.nnue:horde-28173ddccabe.nnue:kingofthehill-978b86d0e6a4.nnue:racingkings-636b95f085e3.nnue"
     limits:
 # Use the same pattern for 'bullet', 'blitz', 'rapid', 'classical',
@@ -87,7 +88,7 @@ opening_books:
 
 online_moves:
   opening_explorer:
-    enabled: true                         # Activate online moves from Lichess opening explorer. The move that has performed best for this bot is played.
+    enabled: false                         # Activate online moves from Lichess opening explorer. The move that has performed best for this bot is played.
     priority: 250                      # Priority with which this move source is used. Higher priority is used first.
     only_without_book: false              # Whether the Lichess opening explorer should only be used if there is no matching book.
     use_for_variants: true                # Whether the Lichess opening explorer should be used for other variants than standard and chess960.
@@ -100,7 +101,7 @@ online_moves:
    # max_depth: 20                         # Half move max depth. (Comment this line for max depth)
 #   max_moves: 1                          # Max number of moves played from Lichess opening explorer. (Comment this line for max moves)
   lichess_cloud:
-    enabled: true                         # Activate online moves from Lichess cloud eval.
+    enabled: false                         # Activate online moves from Lichess cloud eval.
     priority: 200                        # Priority with which this move source is used. Higher priority is used first.
     only_without_book: false              # Whether the cloud should only be used if there is no matching book.
     min_eval_depth: 20                    # Minimum evaluation depth.
@@ -119,7 +120,7 @@ online_moves:
    # max_depth: 30                         # Half move max depth. (Comment this line for max depth)
 #   max_moves: 1                          # Max number of moves played from chessdb. (Comment this line for max moves)
   online_egtb:
-    enabled: true                         # Activate online endgame tablebases from Lichess.
+    enabled: false                         # Activate online endgame tablebases from Lichess.
     min_time: 20                           # Time the bot must have at least to use the online move. +10 seconds in games without increment.
     timeout: 3                            # Time the server has to respond.
 
