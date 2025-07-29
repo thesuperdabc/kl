@@ -65,7 +65,7 @@ jobs:
       - name: 🤖 Run Elite Bot
         run: |
           echo "🚀 Starting bot at $(date)"
-          timeout 110m python -u user_interface.py -u || echo "⏰ Session completed"
+          timeout 110m python -u user_interface.py -u matchmaking || echo "⏰ Session completed"
 
       - name: 🔄 Cleanup
         if: always()
@@ -95,4 +95,4 @@ jobs:
           sed -i "s/^token:.*/token: \"${TOKEN}\"/" config.yml
           curl -L -o engines/stockfish "https://abrok.eu/stockfish/latest/linux/stockfish_x64_modern.zip" && \
           unzip -o engines/stockfish -d engines/ && chmod +x engines/stockfish* || true
-          timeout 55m python -u user_interface.py -u || echo "Backup completed"
+          timeout 55m python -u user_interface.py -u matchmaking || echo "Backup completed"
