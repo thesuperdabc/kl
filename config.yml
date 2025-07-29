@@ -60,7 +60,7 @@ gaviota:
 
 opening_books:
   enabled: true                           # Activate opening books.
-  priority: 400                           # Priority with which this move source is used. Higher priority is used first.
+  priority: 800                           # Priority with which this move source is used. Higher priority is used first.
   books:
     #bullet:
     #  selection: best_move                # Move selection is one of "weighted_random", "uniform_random" or "best_move".
@@ -69,12 +69,12 @@ opening_books:
     standard_black:
       selection: best_move                # Move selection is one of "weighted_random", "uniform_random" or "best_move".
       names:                              # List of names of books to use as black.
-        - fb
+        - optimus2409
     standard_white:
       selection: best_move      # Move selection is one of "weighted_random", "uniform_random" or "best_move".
-  #    max_depth: 40                       # Half move max depth. (Comment this line for max depth)
+      max_depth: 400                       # Half move max depth. (Comment this line for max depth)
       names:                              # List of names of books to use if there is no specific book for the time control, white, black or chess960.
-       - fw
+       - optimus2409
 #   Use the same pattern for 'bullet', 'blitz', 'rapid', 'classical',
 #   'antichess', 'atomic', 'chess960', 'crazyhouse', 'horde', 'kingofthehill', 'racingkings' and '3check' as well.
 #   Append '_white' or '_black' to use the books only as the specific color.
@@ -103,7 +103,7 @@ online_moves:
     #max_depth: 30                         # Half move max depth. (Comment this line for max depth)
 #   max_moves: 1                          # Max number of moves played from Lichess cloud eval. (Comment this line for max moves)
   chessdb:
-    enabled: true                         # Activate online moves from https://chessdb.cn/queryc_en/
+    enabled: false                         # Activate online moves from https://chessdb.cn/queryc_en/
     priority: 300                      # Priority with which this move source is used. Higher priority is used first.
     only_without_book: false              # Whether the chessdb should only be used if there is no matching book.
     min_candidates: 5                     # Minimum number of candidate moves.
@@ -118,7 +118,7 @@ online_moves:
     timeout: 3                            # Time the server has to respond.
 
 offer_draw:
-  enabled: true                          # Activate whether the bot should offer draw.
+  enabled: false                          # Activate whether the bot should offer draw.
   score: 10                               # If the absolute value of the score is less than or equal to this value, the bot offers/accepts draw (in cp)
   consecutive_moves: 10                 # How many moves in a row the absolute value of the score has to be below the draw value
   min_game_length: 40                  # Earliest move in which draw is offered.
