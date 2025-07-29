@@ -1,0 +1,75 @@
+name: Simple Lichess Bot
+
+on:
+  workflow_dispatch:
+    inputs:
+      restart_reason:
+        description: 'Reason for restart'
+        required: false
+        default: 'Manual start'
+  schedule:
+    - cron: '0 */2 * * *'
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    
+    env:
+      LICHESS_TOKEN: ${{ secrets.LICHESS_TOKEN }}
+      BOT_NAME: ${{ secrets.BOT_NAME }}
+      
+    steps:
+      - name: Checkout BotLi
+        uses: actions/checkout@v4
+        with:
+          repository: 'Torom/BotLi'
+          ref: 'main'
+          
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Setup Engines
+        run: |
+          mkdir -p engines
+          
+          # Download Stockfish dev
+          curl -L -o stockfish.zip "https://abrok.eu/stockfish/latest/linux/stockfish_x64_modern.zip"
+          unzip -o stockfish.zip -d engines/
+          find engines/ -name "stockfish*" -type f -exec mv {} engines/stockfish_dev \;
+          chmod +x engines/stockfish_dev
+          
+          # Download Stockfish 17
+          curl -L -o engines/stockfish_17 "https://github.com/official-stockfish/Stockfish/releases/download/sf_17/stockfish-ubuntu-x86-64-modern"
+          chmod +x engines/stockfish_17
+          
+          # Make fairy-stockfish executable if exists
+          if [ -f "engines/fairy-stockfish" ]; then
+            chmod +x engines/fairy-stockfish
+          fi
+          
+      - name: Configure Bot
+        run: |
+          # Insert token into config
+          sed -i "s/^token:.*/token: \"${LICHESS_TOKEN}\"/" config.yml
+          
+      - name: Start Bot
+        run: |
+          echo "Starting bot at $(date)"
+          timeout 6300s python -u user_interface.py -u || {
+            exit_code=$?
+            if [ $exit_code -eq 124 ]; then
+              echo "Bot timeout reached - normal restart"
+              exit 0
+            else
+              echo "Bot failed with code: $exit_code"
+              exit $exit_code
+            fi
+          }
