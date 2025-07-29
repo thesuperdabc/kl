@@ -69,12 +69,12 @@ opening_books:
     standard_black:
       selection: best_move                # Move selection is one of "weighted_random", "uniform_random" or "best_move".
       names:                              # List of names of books to use as black.
-        - FilteredBlack
+        - fb
     standard_white:
       selection: best_move      # Move selection is one of "weighted_random", "uniform_random" or "best_move".
   #    max_depth: 40                       # Half move max depth. (Comment this line for max depth)
       names:                              # List of names of books to use if there is no specific book for the time control, white, black or chess960.
-       - FilteredWhite
+       - fw
 #   Use the same pattern for 'bullet', 'blitz', 'rapid', 'classical',
 #   'antichess', 'atomic', 'chess960', 'crazyhouse', 'horde', 'kingofthehill', 'racingkings' and '3check' as well.
 #   Append '_white' or '_black' to use the books only as the specific color.
@@ -212,5 +212,5 @@ books:                                    # Names of the opening books (to be us
   optimus2409: "./engines/optimus2409.bin"
   default:  "./engines/default.bin"
   probook: "./engines/probook.bin"
-  Opimus3.1: "./engines/optimus32.bin"
-  FilteredBlack: "./engines/FilteredBlack.bin"
+  fw: "./engines/fw.bin"
+  fb: "./engines/fb.bin"
