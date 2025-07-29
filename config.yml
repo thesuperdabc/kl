@@ -6,11 +6,11 @@ engines:
     name: "stockfish"                     # Binary name of the engine to use.
     ponder: true                       # Think on opponent's time.
     silence_stderr: false                 # Suppresses stderr output.
-    move_overhead_multiplier: 1.0  # Increase if your bot flags games too often. Default move overhead is 1 second per 1 minute initital time.
+    move_overhead_multiplier: 21.5  # Increase if your bot flags games too often. Default move overhead is 1 second per 1 minute initital time.
     uci_options:                          # Arbitrary UCI options passed to the engine. (Commenting allowed)
-      Threads: 7                          # Max CPU threads the engine can use.
-      Hash: 3000                    # Max memory (in megabytes) the engine can allocate.
-      Move Overhead: 250
+      Threads: 8                          # Max CPU threads the engine can use.
+      Hash: 4096                    # Max memory (in megabytes) the engine can allocate.
+      Move Overhead: 100
     limits:
 #      time: 3.0
 #      depth: 20
@@ -67,16 +67,14 @@ opening_books:
     #  names:                              # List of names of books to use in bullet.
     #    - FilteredWhite
     standard_black:
-      selection: weighted_random                # Move selection is one of "weighted_random", "uniform_random" or "best_move".
+      selection: uniform_random                # Move selection is one of "weighted_random", "uniform_random" or "best_move".
       names:                              # List of names of books to use as black.
-        - riro
-        - probook
+        - fb
     standard_white:
-      selection: weighted_random      # Move selection is one of "weighted_random", "uniform_random" or "best_move".
+      selection: uniform_random      # Move selection is one of "weighted_random", "uniform_random" or "best_move".
       max_depth: 400                       # Half move max depth. (Comment this line for max depth)
       names:                              # List of names of books to use if there is no specific book for the time control, white, black or chess960.
-       - riro
-       - probook
+       - fw
 #   Use the same pattern for 'bullet', 'blitz', 'rapid', 'classical',
 #   'antichess', 'atomic', 'chess960', 'crazyhouse', 'horde', 'kingofthehill', 'racingkings' and '3check' as well.
 #   Append '_white' or '_black' to use the books only as the specific color.
@@ -214,4 +212,4 @@ books:                                    # Names of the opening books (to be us
   default:  "./engines/default.bin"
   probook: "./engines/probook.bin"
   fw: "./engines/fw.bin"
-  riro: "./engines/riro.bin"
+  fb: "./engines/fb.bin"
