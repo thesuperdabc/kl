@@ -48,15 +48,19 @@ jobs:
           find engines/ -name "stockfish*" -type f -exec mv {} engines/stockfish \;
           chmod +x engines/stockfish
 
-      - name: 🎯 Setup Additional Engines
+      - name: 🎯 Setup Engine Permissions
         run: |
-          # Stockfish 17+ for variants
-          curl -L -o engines/stockfish17 "https://github.com/official-stockfish/Stockfish/releases/download/sf_17/stockfish-ubuntu-x86-64-avx2" || \
-          curl -L -o engines/stockfish17 "https://github.com/official-stockfish/Stockfish/releases/download/sf_17/stockfish-ubuntu-x86-64-modern"
-          chmod +x engines/stockfish17
+          # Make all existing engines executable
+          chmod +x engines/* 2>/dev/null || true
           
-          # Make fairy-stockfish executable if exists
-          [ -f "engines/fairy-stockfish" ] && chmod +x engines/fairy-stockfish || true
+          # Create symlink if fairy-sf exists but fairy-stockfish is expected
+          if [ -f "engines/fairy-sf" ] && [ ! -f "engines/fairy-stockfish" ]; then
+            ln -sf fairy-sf engines/fairy-stockfish
+          fi
+          
+          # List available engines for debugging
+          echo "Available engines:"
+          ls -la engines/
 
       - name: 🤖 Run Elite Bot
         run: |
