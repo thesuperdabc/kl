@@ -41,7 +41,7 @@ jobs:
     
     concurrency:
       group: lichess-bot-runner
-      cancel-in-progress: true
+      cancel-in-progress: false
 
     env:
       LICHESS_TOKEN: ${{ secrets.LICHESS_TOKEN }}
@@ -68,7 +68,11 @@ jobs:
       - name: Install Python Dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt --no-cache-dir
+          
+      - name: Verify Installation
+        run: |
+          python -c "import chess, aiohttp, yaml; print('All dependencies installed successfully')"
           
       - name: Setup Stockfish Engines
         run: |
@@ -94,6 +98,8 @@ jobs:
           # Verify engines
           echo "Verifying engines..."
           ls -la engines/
+          ./engines/stockfish_dev --help || echo "Stockfish dev ready"
+          ./engines/stockfish_17 --help || echo "Stockfish 17 ready"
           
       - name: Configure Bot Settings
         run: |
@@ -104,6 +110,10 @@ jobs:
           
           # Insert Lichess token
           sed -i "s/^token:.*/token: \"${LICHESS_TOKEN}\"/" config.yml
+          
+          # Verify config
+          echo "Verifying configuration..."
+          python -c "import yaml; yaml.safe_load(open('config.yml'))" && echo "Config is valid YAML"
           
       - name: Display Configuration
         run: |
@@ -118,7 +128,7 @@ jobs:
           echo "Start time: $(date)"
           
           # Start bot with timeout and monitoring
-          timeout 6600s python -u user_interface.py -u || {
+          timeout 6600s python -u user_interface.py -u 2>&1 | tee bot.log || {
             exit_code=$?
             echo "Bot stopped with exit code: $exit_code"
             echo "Stop time: $(date)"
@@ -133,12 +143,22 @@ jobs:
             fi
           }
           
+      - name: Upload Bot Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bot-logs-${{ github.run_number }}
+          path: bot.log
+          retention-days: 7
+          
       - name: Cleanup on Failure
         if: failure()
         run: |
           echo "=== Cleanup after failure ==="
           echo "Failure time: $(date)"
           ps aux | grep python || true
+          echo "=== Last 50 lines of bot log ==="
+          tail -50 bot.log || echo "No log file found"
           
   notify-status:
     needs: [run-lichess-bot]
