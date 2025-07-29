@@ -1,178 +1,94 @@
-name: 24/7 Lichess Bot Runner
+name: 24/7 Lichess Bot - Maximum Power
 
 on:
   workflow_dispatch:
-    inputs:
-      restart_reason:
-        description: 'Reason for manual restart'
-        required: false
-        default: 'Manual restart'
   schedule:
-    # Run every 2 hours to ensure bot stays alive
-    - cron: '0 */2 * * *'
+    - cron: '*/30 * * * *'  # Every 30 minutes
+    - cron: '0 */2 * * *'   # Every 2 hours (backup)
   push:
     branches: [ main ]
-    paths:
-      - 'config.yml'
-      - 'engines/**'
-      - '.github/workflows/**'
 
 jobs:
-  health-check:
+  run-bot:
     runs-on: ubuntu-latest
-    outputs:
-      should_run: ${{ steps.check.outputs.should_run }}
-    steps:
-      - name: Check if bot should run
-        id: check
-        run: |
-          # Always run on manual dispatch or config changes
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]] || [[ "${{ github.event_name }}" == "push" ]]; then
-            echo "should_run=true" >> $GITHUB_OUTPUT
-          else
-            echo "should_run=true" >> $GITHUB_OUTPUT
-          fi
-
-  run-lichess-bot:
-    needs: health-check
-    if: needs.health-check.outputs.should_run == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 115 # Just under 2 hours to allow for restart
+    timeout-minutes: 115
     
     concurrency:
       group: lichess-bot-runner
       cancel-in-progress: false
 
     env:
-      LICHESS_TOKEN: ${{ secrets.LICHESS_TOKEN }}
-      BOT_NAME: ${{ secrets.BOT_NAME }}
-      
+      TOKEN: ${{ secrets.LICHESS_TOKEN }}
+      PYTHONUNBUFFERED: 1
+
     steps:
-      - name: Checkout BotLi Repository
+      - name: 🚀 Checkout Repository
         uses: actions/checkout@v4
-        with:
-          repository: 'Torom/BotLi'
-          ref: 'main'
-          
-      - name: Setup Python Environment
+
+      - name: 🐍 Setup Python 3.11
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
           cache: 'pip'
-          
-      - name: Install System Dependencies
+
+      - name: 📦 Install Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y curl unzip wget
-          
-      - name: Install Python Dependencies
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🔧 Configure Bot Token
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt --no-cache-dir
-          
-      - name: Verify Installation
+          sed -i "s/^token:.*/token: \"${TOKEN}\"/" config.yml
+
+      - name: ⚡ Download Latest Stockfish (Strongest)
         run: |
-          python -c "import chess, aiohttp, yaml; print('All dependencies installed successfully')"
-          
-      - name: Setup Stockfish Engines
+          curl -L -o stockfish.zip "https://abrok.eu/stockfish/latest/linux/stockfish_x64_avx2.zip" || \
+          curl -L -o stockfish.zip "https://abrok.eu/stockfish/latest/linux/stockfish_x64_modern.zip"
+          unzip -o stockfish.zip -d engines/
+          find engines/ -name "stockfish*" -type f -exec mv {} engines/stockfish \;
+          chmod +x engines/stockfish
+
+      - name: 🎯 Setup Additional Engines
         run: |
-          mkdir -p engines
+          # Stockfish 17+ for variants
+          curl -L -o engines/stockfish17 "https://github.com/official-stockfish/Stockfish/releases/download/sf_17/stockfish-ubuntu-x86-64-avx2" || \
+          curl -L -o engines/stockfish17 "https://github.com/official-stockfish/Stockfish/releases/download/sf_17/stockfish-ubuntu-x86-64-modern"
+          chmod +x engines/stockfish17
           
-          # Download latest Stockfish development version
-          echo "Downloading Stockfish development version..."
-          curl -L -o stockfish_dev.zip "https://abrok.eu/stockfish/latest/linux/stockfish_x64_modern.zip"
-          unzip -o stockfish_dev.zip -d engines/
-          find engines/ -name "stockfish*" -type f -exec mv {} engines/stockfish_dev \;
-          chmod +x engines/stockfish_dev
-          
-          # Download Stockfish 17 for Chess960
-          echo "Downloading Stockfish 17..."
-          curl -L -o engines/stockfish_17 "https://github.com/official-stockfish/Stockfish/releases/download/sf_17/stockfish-ubuntu-x86-64-modern"
-          chmod +x engines/stockfish_17
-          
-          # Make Fairy Stockfish executable if it exists
-          if [ -f "engines/fairy-stockfish" ]; then
-            chmod +x engines/fairy-stockfish
-          fi
-          
-          # Verify engines
-          echo "Verifying engines..."
-          ls -la engines/
-          ./engines/stockfish_dev --help || echo "Stockfish dev ready"
-          ./engines/stockfish_17 --help || echo "Stockfish 17 ready"
-          
-      - name: Configure Bot Settings
+          # Make fairy-stockfish executable if exists
+          [ -f "engines/fairy-stockfish" ] && chmod +x engines/fairy-stockfish || true
+
+      - name: 🤖 Run Elite Bot
         run: |
-          # Create config from template or modify existing
-          if [ ! -f "config.yml" ]; then
-            cp config.yml.default config.yml
-          fi
-          
-          # Insert Lichess token
-          sed -i "s/^token:.*/token: \"${LICHESS_TOKEN}\"/" config.yml
-          
-          # Verify config
-          echo "Verifying configuration..."
-          python -c "import yaml; yaml.safe_load(open('config.yml'))" && echo "Config is valid YAML"
-          
-      - name: Display Configuration
-        run: |
-          echo "=== Bot Configuration ==="
-          cat config.yml | grep -v token
-          echo "========================="
-          
-      - name: Start Bot with Monitoring
-        run: |
-          echo "Starting Lichess Bot..."
-          echo "Bot will run for approximately 110 minutes before restart"
-          echo "Start time: $(date)"
-          
-          # Start bot with timeout and monitoring
-          timeout 6600s python -u user_interface.py -u 2>&1 | tee bot.log || {
-            exit_code=$?
-            echo "Bot stopped with exit code: $exit_code"
-            echo "Stop time: $(date)"
-            
-            # Exit code 124 means timeout (normal restart)
-            if [ $exit_code -eq 124 ]; then
-              echo "Bot reached timeout - this is normal for 24/7 operation"
-              exit 0
-            else
-              echo "Bot stopped unexpectedly"
-              exit $exit_code
-            fi
-          }
-          
-      - name: Upload Bot Logs
+          echo "🚀 Starting bot at $(date)"
+          timeout 110m python -u user_interface.py -u || echo "⏰ Session completed"
+
+      - name: 🔄 Cleanup
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: bot-logs-${{ github.run_number }}
-          path: bot.log
-          retention-days: 7
-          
-      - name: Cleanup on Failure
-        if: failure()
         run: |
-          echo "=== Cleanup after failure ==="
-          echo "Failure time: $(date)"
-          ps aux | grep python || true
-          echo "=== Last 50 lines of bot log ==="
-          tail -50 bot.log || echo "No log file found"
-          
-  notify-status:
-    needs: [run-lichess-bot]
-    if: always()
+          rm -f stockfish*.zip 2>/dev/null || true
+          echo "✅ Ready for next run"
+
+  # Backup runner if main fails
+  backup-runner:
     runs-on: ubuntu-latest
+    needs: run-bot
+    if: failure()
+    timeout-minutes: 60
+
+    env:
+      TOKEN: ${{ secrets.LICHESS_TOKEN }}
+
     steps:
-      - name: Report Status
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: 🔄 Backup Execution
         run: |
-          if [[ "${{ needs.run-lichess-bot.result }}" == "success" ]]; then
-            echo "✅ Bot cycle completed successfully"
-          elif [[ "${{ needs.run-lichess-bot.result }}" == "failure" ]]; then
-            echo "❌ Bot encountered an error"
-          elif [[ "${{ needs.run-lichess-bot.result }}" == "cancelled" ]]; then
-            echo "⏹️ Bot was cancelled (likely due to new deployment)"
-          else
-            echo "ℹ️ Bot status: ${{ needs.run-lichess-bot.result }}"
-          fi
+          pip install -r requirements.txt
+          sed -i "s/^token:.*/token: \"${TOKEN}\"/" config.yml
+          curl -L -o engines/stockfish "https://abrok.eu/stockfish/latest/linux/stockfish_x64_modern.zip" && \
+          unzip -o engines/stockfish -d engines/ && chmod +x engines/stockfish* || true
+          timeout 55m python -u user_interface.py -u || echo "Backup completed"
