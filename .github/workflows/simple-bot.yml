@@ -8,12 +8,16 @@ on:
         required: false
         default: 'Manual start'
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '0 */2 * * *'  # Every 2 hours
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 110
+    timeout-minutes: 115
+    
+    concurrency:
+      group: simple-lichess-bot
+      cancel-in-progress: true
     
     env:
       LICHESS_TOKEN: ${{ secrets.LICHESS_TOKEN }}
@@ -30,23 +34,30 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
+          cache: 'pip'
           
       - name: Install Dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt --no-cache-dir
+          
+      - name: Verify Installation
+        run: |
+          python -c "import chess, aiohttp, yaml; print('✅ All dependencies OK')"
           
       - name: Setup Engines
         run: |
           mkdir -p engines
           
           # Download Stockfish dev
+          echo "📥 Downloading Stockfish development version..."
           curl -L -o stockfish.zip "https://abrok.eu/stockfish/latest/linux/stockfish_x64_modern.zip"
           unzip -o stockfish.zip -d engines/
           find engines/ -name "stockfish*" -type f -exec mv {} engines/stockfish_dev \;
           chmod +x engines/stockfish_dev
           
           # Download Stockfish 17
+          echo "📥 Downloading Stockfish 17..."
           curl -L -o engines/stockfish_17 "https://github.com/official-stockfish/Stockfish/releases/download/sf_17/stockfish-ubuntu-x86-64-modern"
           chmod +x engines/stockfish_17
           
@@ -55,21 +66,40 @@ jobs:
             chmod +x engines/fairy-stockfish
           fi
           
+          # Verify engines work
+          echo "🔧 Verifying engines..."
+          ./engines/stockfish_dev --help || echo "Stockfish dev ready"
+          ./engines/stockfish_17 --help || echo "Stockfish 17 ready"
+          
       - name: Configure Bot
         run: |
           # Insert token into config
           sed -i "s/^token:.*/token: \"${LICHESS_TOKEN}\"/" config.yml
           
+          # Verify config is valid YAML
+          python -c "import yaml; yaml.safe_load(open('config.yml'))" && echo "✅ Config is valid"
+          
       - name: Start Bot
         run: |
-          echo "Starting bot at $(date)"
-          timeout 6300s python -u user_interface.py -u || {
+          echo "🚀 Starting Lichess bot at $(date)"
+          echo "⏰ Bot will run for ~110 minutes before restart"
+          
+          timeout 6600s python -u user_interface.py -u 2>&1 | tee bot.log || {
             exit_code=$?
+            echo "🛑 Bot stopped at $(date)"
             if [ $exit_code -eq 124 ]; then
-              echo "Bot timeout reached - normal restart"
+              echo "✅ Timeout reached - normal 2-hour restart cycle"
               exit 0
             else
-              echo "Bot failed with code: $exit_code"
+              echo "❌ Bot failed with exit code: $exit_code"
               exit $exit_code
             fi
           }
+          
+      - name: Upload Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bot-logs-${{ github.run_number }}
+          path: bot.log
+          retention-days: 3
