@@ -1,4 +1,4 @@
-token: lip_LljPsA3HBSv3n5aOpwao             # Lichess OAuth2 Token.
+token: urtoken             # Lichess OAuth2 Token.
 
 engines:
   standard:                               # Engine used for standard chess and when no suitable special engine is configured.
