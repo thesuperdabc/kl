@@ -1,0 +1,61 @@
+name: Manual Bot Restart
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for restart'
+        required: false
+        default: 'Manual restart requested'
+      force_kill:
+        description: 'Force kill existing bot instances'
+        type: boolean
+        default: true
+
+jobs:
+  restart-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Running Bot Workflows
+        if: ${{ inputs.force_kill }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'lichess-bot.yml',
+              status: 'in_progress'
+            });
+            
+            for (const run of runs.data.workflow_runs) {
+              if (run.id !== context.runId) {
+                console.log(`Cancelling run ${run.id}`);
+                await github.rest.actions.cancelWorkflowRun({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id
+                });
+              }
+            }
+            
+      - name: Wait for Cancellation
+        if: ${{ inputs.force_kill }}
+        run: sleep 10
+        
+      - name: Trigger New Bot Run
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'lichess-bot.yml',
+              ref: 'main',
+              inputs: {
+                restart_reason: '${{ inputs.reason }}'
+              }
+            });
+            
+            console.log('✅ New bot instance triggered successfully');
+            console.log('Reason: ${{ inputs.reason }}');
