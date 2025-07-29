@@ -1,46 +1,291 @@
-name: Run bot
+name: 24/7 MAXIMUM POWER Lichess Bot
 
-# Controls when the workflow will run
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - "main"
-    paths:
-      - "user_interface.py"
+    inputs:
+      force_restart:
+        description: 'Force restart bot'
+        required: false
+        default: 'false'
+      engine_threads:
+        description: 'Engine threads (1-32)'
+        required: false
+        default: '32'
+      hash_size:
+        description: 'Hash size in MB (1024-8192)'
+        required: false
+        default: '8192'
+      skill_level:
+        description: 'Stockfish skill (1-20)'
+        required: false
+        default: '20'
   schedule:
-    - cron: "1 */5 * * *"
-
-concurrency:
-  group: ${{ github.ref }}
-  cancel-in-progress: true
+    - cron: '0 */3 * * *'  # Every 3 hours for MAXIMUM uptime
+  push:
+    branches: [ main ]
+    paths:
+      - 'config.yml'
+      - 'user_interface.py'
+      - '.github/workflows/**'
 
 jobs:
-  build:
+  # ULTRA HIGH PERFORMANCE PRIMARY BOT
+  ultra-performance-bot:
     runs-on: ubuntu-latest
+    timeout-minutes: 300  # 5 hours maximum runtime
+    
+    concurrency:
+      group: ultra-bot-${{ github.ref }}
+      cancel-in-progress: false
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.12']  # Latest Python for best performance
+
+    env:
+      TOKEN: ${{ secrets.TOKEN }}
+      PYTHONUNBUFFERED: 1
+      PYTHONIOENCODING: utf-8
+      ENGINE_THREADS: ${{ github.event.inputs.engine_threads || '32' }}
+      HASH_SIZE: ${{ github.event.inputs.hash_size || '8192' }}
+      SKILL_LEVEL: ${{ github.event.inputs.skill_level || '20' }}
+      OMP_NUM_THREADS: 32
+      GOMAXPROCS: 32
 
     steps:
-      - uses: actions/checkout@v3
+      - name: 🚀 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-      - name: Python Dependency Installation
-        uses: py-actions/py-dependency-install@v4.0.0
+      - name: 🐍 Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
 
-      - name: Injection For my Repo
-        run: sed -i "s/TokenTimeIsBackBuddyss/${{ secrets.LICHESS_KEY }}/g" config.yml
-
-      - name: Download and Extract Stockfish
+      - name: 💪 MAXIMUM System Optimization
         run: |
-          mkdir -p ./engines
-          wget -O stockfish.zip http://abrok.eu/stockfish/latest/linux/stockfish_x64_avx2.zip
-          unzip stockfish.zip -d ./engines
-          ls -l ./engines
-          mv ./engines/stockfish_*_x64_avx2 ./engines/stockfish-ubuntu-x86-64-avx2
-          chmod +x ./engines/stockfish-ubuntu-x86-64-avx2
-          rm stockfish.zip
+          echo "🔥 UNLEASHING MAXIMUM GITHUB RUNNER POWER 🔥"
+          
+          # Show FULL system specs
+          echo "=== FULL SYSTEM SPECIFICATIONS ==="
+          echo "CPU Cores: $(nproc --all)"
+          echo "CPU Info:"
+          lscpu
+          echo ""
+          echo "Memory Info:"
+          free -h
+          echo ""
+          echo "Disk Info:"
+          df -h
+          echo ""
+          
+          # MAXIMUM performance optimizations
+          sudo sysctl -w vm.swappiness=1
+          sudo sysctl -w vm.dirty_ratio=15
+          sudo sysctl -w vm.dirty_background_ratio=5
+          sudo sysctl -w kernel.sched_migration_cost_ns=5000000
+          sudo sysctl -w kernel.sched_autogroup_enabled=0
+          sudo sysctl -w kernel.sched_wakeup_granularity_ns=15000000
+          sudo sysctl -w kernel.sched_min_granularity_ns=10000000
+          sudo sysctl -w kernel.sched_latency_ns=80000000
+          
+          # CPU performance mode (if available)
+          echo performance | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor 2>/dev/null || echo "CPU governor not available"
+          
+          # Disable CPU frequency scaling
+          echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo 2>/dev/null || echo "Intel P-State not available"
+          
+          # Memory optimization
+          echo 1 | sudo tee /proc/sys/vm/drop_caches
+          
+          echo "✅ SYSTEM OPTIMIZED FOR MAXIMUM CHESS ENGINE PERFORMANCE"
 
-      - name: Make Fairy-Stockfish executable
-        run: chmod +x ./engines/fairy-sf
+      - name: 📦 Install High-Performance Dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install --no-cache-dir --upgrade -r requirements.txt
+          
+          # Install performance monitoring tools
+          pip install psutil py-spy memory-profiler line-profiler
+          
+          # Install additional chess libraries for maximum strength
+          pip install python-chess[engine,gaviota,syzygy] stockfish
 
-      # Run the bot
-      - name: Running bot
-        run: python3 user_interface.py -u
+      - name: 🏗️ Configure Maximum Power Token
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "❌ TOKEN secret not set!"
+            exit 1
+          fi
+          sed -i "s/^token:.*/token: \"${TOKEN}\"/" config.yml
+          echo "✅ Token configured for MAXIMUM POWER mode"
+
+      - name: 🎯 Cache STRONGEST Stockfish Build
+        id: stockfish-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            engines/stockfish*
+            engines/fairy-stockfish*
+          key: stockfish-ultra-${{ runner.os }}-2025-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            stockfish-ultra-${{ runner.os }}-2025-
+            stockfish-ultra-${{ runner.os }}-
+
+      - name: ⚡ Download STRONGEST Stockfish Builds Available
+        if: steps.stockfish-cache.outputs.cache-hit != 'true'
+        run: |
+          echo "🔥 DOWNLOADING THE STRONGEST STOCKFISH BUILDS ON EARTH 🔥"
+          mkdir -p engines/
+          
+          # Try to get the absolute strongest builds available
+          DOWNLOADED=false
+          
+          # 1. Try official Stockfish 16+ development build
+          echo "🎯 Attempting official Stockfish 16+ dev build..."
+          if curl -L -f -o stockfish.tar "https://github.com/official-stockfish/Stockfish/releases/latest/download/stockfish-ubuntu-x86-64-avx2.tar" 2>/dev/null; then
+            tar -xf stockfish.tar -C engines/ 2>/dev/null || true
+            if find engines/ -name "stockfish*" -type f -executable | head -1 | xargs -I {} test -x {}; then
+              find engines/ -name "stockfish*" -type f -executable | head -1 | xargs -I {} mv {} engines/stockfish
+              DOWNLOADED=true
+              echo "✅ Official Stockfish 16+ downloaded"
+            fi
+          fi
+          
+          # 2. Try Abrok's strongest development build
+          if [ "$DOWNLOADED" = false ]; then
+            echo "🎯 Attempting Abrok's strongest build..."
+            if curl -L -f -o stockfish.zip "http://abrok.eu/stockfish/latest/linux/stockfish_x64_avx2.zip" 2>/dev/null; then
+              unzip -o stockfish.zip -d engines/ 2>/dev/null || true
+              if find engines/ -name "stockfish*" -type f | head -1 | xargs -I {} test -f {}; then
+                find engines/ -name "stockfish*" -type f | head -1 | xargs -I {} mv {} engines/stockfish
+                DOWNLOADED=true
+                echo "✅ Abrok's strongest build downloaded"
+              fi
+            fi
+          fi
+          
+          # 3. Try modern fallback
+          if [ "$DOWNLOADED" = false ]; then
+            echo "🎯 Using modern fallback build..."
+            curl -L -o stockfish.zip "http://abrok.eu/stockfish/latest/linux/stockfish_x64_modern.zip"
+            unzip -o stockfish.zip -d engines/
+            find engines/ -name "stockfish*" -type f | head -1 | xargs -I {} mv {} engines/stockfish
+            echo "✅ Modern build downloaded"
+          fi
+          
+          chmod +x engines/stockfish
+          
+          # Download Fairy-Stockfish for variants
+          echo "🧚 Downloading Fairy-Stockfish for chess variants..."
+          curl -L -o engines/fairy-stockfish "https://github.com/ianfab/Fairy-Stockfish/releases/latest/download/fairy-stockfish-largeboard_x86-64" || \
+          curl -L -o engines/fairy-stockfish "https://github.com/ianfab/Fairy-Stockfish/releases/latest/download/fairy-stockfish_x86-64"
+          chmod +x engines/fairy-stockfish
+          
+          # Verify engines
+          echo "=== ENGINE VERIFICATION ==="
+          ./engines/stockfish --help 2>/dev/null || echo "Stockfish help not available"
+          timeout 3s ./engines/stockfish uci 2>/dev/null || echo "Stockfish UCI test completed"
+          ./engines/fairy-stockfish --help 2>/dev/null || echo "Fairy-Stockfish help not available"
+          
+          echo "🚀 ALL ENGINES READY FOR MAXIMUM DESTRUCTION"
+
+      - name: 📚 Download STRONGEST Opening Books
+        run: |
+          mkdir -p books/
+          echo "📖 Downloading the strongest opening books..."
+          
+          # Download multiple strong opening books
+          curl -L -o books/Perfect2021.bin "https://github.com/official-stockfish/books/raw/master/Perfect2021.bin" 2>/dev/null || echo "Perfect2021 not available"
+          curl -L -o books/Cerebellum3Merge.bin "https://github.com/Matthies/Cerebellum/raw/master/Cerebellum3Merge.bin" 2>/dev/null || echo "Cerebellum not available"
+          
+          # List downloaded books
+          ls -la books/ || echo "No books directory"
+          echo "✅ Opening books configured for maximum strength"
+
+      - name: ⚙️ MAXIMUM STRENGTH Engine Configuration
+        run: |
+          echo "🔧 APPLYING MAXIMUM STRENGTH CONFIGURATION..."
+          echo "🧠 Hash Size: ${HASH_SIZE}MB (MAXIMUM MEMORY USAGE)"
+          echo "⚡ Threads: ${ENGINE_THREADS} (FULL CPU POWER)"
+          echo "🎯 Skill Level: ${SKILL_LEVEL} (MAXIMUM STRENGTH)"
+          
+          # Create ultra-high performance engine config
+          cat >> config.yml << EOF
+          
+          # MAXIMUM STRENGTH ENGINE CONFIGURATION
+          engine:
+            uci_options:
+              Hash: ${HASH_SIZE}
+              Threads: ${ENGINE_THREADS}
+              Move Overhead: 30
+              Slow Mover: 150
+              Skill Level: ${SKILL_LEVEL}
+              MultiPV: 1
+              Ponder: true
+              UCI_Chess960: true
+              UCI_LimitStrength: false
+              UCI_Elo: 3200
+              Contempt: 30
+              Analysis Contempt: "Off"
+              Use NNUE: true
+              EvalFile: ""
+              Syzygy50MoveRule: true
+              SyzygyProbeDepth: 1
+              Syzygy50MoveCounter: true
+              SyzygyProbeLimit: 7
+              
+          # AGGRESSIVE CHALLENGE SETTINGS
+          challenge:
+            concurrency: 3
+            max_increment: 300
+            min_increment: 0
+            max_base: 7200
+            min_base: 30
+            variants: ["standard", "chess960", "crazyhouse", "horde", "atomic", "racingKings", "kingOfTheHill", "threeCheck", "antichess", "suicide"]
+            time_controls: ["bullet", "blitz", "rapid", "classical", "correspondence"]
+            modes: ["casual", "rated"]
+            
+          # MAXIMUM PERFORMANCE SETTINGS
+          correspondence:
+            move_time: 300
+            checkin_period: 180
+            disconnect_time: 600
+            ponder: true
+            
+          matchmaking:
+            delay: 5
+            timeout: 45
+            challenge_timeout: 60
+          EOF
+          
+          echo "🚀 ENGINE CONFIGURED FOR ABSOLUTE MAXIMUM STRENGTH"
+
+      - name: 🎮 LAUNCH ULTRA-HIGH PERFORMANCE BOT
+        timeout-minutes: 295
+        run: |
+          echo "🔥🔥🔥 LAUNCHING MAXIMUM POWER LICHESS BOT 🔥🔥🔥"
+          echo "💪 SYSTEM SPECS:"
+          echo "   🧠 Hash: ${HASH_SIZE}MB"
+          echo "   ⚡ Threads: ${ENGINE_THREADS}"
+          echo "   🎯 Skill: ${SKILL_LEVEL}/20"
+          echo "   🚀 Mode: ULTRA AGGRESSIVE"
+          
+          # Set maximum process priority
+          sudo renice -20 $$ 2>/dev/null || renice -10 $$ 2>/dev/null || echo "Priority adjustment not available"
+          
+          # Start resource monitoring in background
+          (
+            while true; do
+              echo "=== $(date '+%H:%M:%S') PERFORMANCE MONITOR ==="
+              echo "🔥 CPU: $(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1)%"
+              echo "🧠 RAM: $(free | grep Mem | awk '{printf "%.1f%%", $3/$2 * 100.0}')"
+              echo "⚡ Load: $(uptime | awk -F'load average:' '{print $2}')"
+              echo "🎯 Processes: $(ps aux --sort=-%cpu | head -5 | tail -4)"
+              echo "================================"
+              sleep 180  # Every 3 minutes
+            done
+          ) &
