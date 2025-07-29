@@ -1,0 +1,46 @@
+name: Bot Health Monitor
+
+on:
+  schedule:
+    # Check bot health every 30 minutes
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  monitor-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Bot Status on Lichess
+        env:
+          BOT_NAME: ${{ secrets.BOT_NAME }}
+          LICHESS_TOKEN: ${{ secrets.LICHESS_TOKEN }}
+        run: |
+          if [ -z "$BOT_NAME" ]; then
+            echo "BOT_NAME secret not set"
+            exit 1
+          fi
+          
+          echo "Checking status of bot: $BOT_NAME"
+          
+          # Check if bot is online
+          response=$(curl -s "https://lichess.org/api/user/$BOT_NAME" \
+            -H "Authorization: Bearer $LICHESS_TOKEN" || echo "error")
+            
+          if [[ "$response" == "error" ]]; then
+            echo "❌ Failed to connect to Lichess API"
+            exit 1
+          fi
+          
+          # Parse response to check if bot is online
+          online=$(echo "$response" | grep -o '"online":[^,]*' | cut -d':' -f2 || echo "false")
+          
+          if [[ "$online" == "true" ]]; then
+            echo "✅ Bot $BOT_NAME is online and active"
+          else
+            echo "⚠️ Bot $BOT_NAME appears to be offline"
+            echo "This might be normal if between games or during restart cycle"
+          fi
+          
+          # Get basic stats
+          echo "=== Bot Statistics ==="
+          echo "$response" | grep -o '"count":[^}]*}' || echo "Stats not available"

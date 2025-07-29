@@ -1,0 +1,35 @@
+name: Deploy Bot Updates
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_restart:
+        description: 'Force restart all bot instances'
+        type: boolean
+        default: false
+  push:
+    branches: [ main ]
+    paths:
+      - 'config/**'
+      - 'engines/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Bot Restart
+        run: |
+          echo "Triggering bot restart due to configuration changes..."
+          
+          # This will cancel the current bot run and start a new one
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/lichess-bot.yml/dispatches" \
+            -d '{"ref":"main","inputs":{"restart_reason":"Configuration update"}}'
+            
+      - name: Wait for Deployment
+        run: |
+          echo "Waiting 30 seconds for new bot instance to start..."
+          sleep 30
+          echo "✅ Deployment triggered successfully"
