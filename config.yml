@@ -62,20 +62,19 @@ opening_books:
   enabled: true                           # Activate opening books.
   priority: 400                           # Priority with which this move source is used. Higher priority is used first.
   books:
-    bullet:
-      selection: best_move                # Move selection is one of "weighted_random", "uniform_random" or "best_move".
-      names:                              # List of names of books to use in bullet.
-        - default
+    #bullet:
+    #  selection: best_move                # Move selection is one of "weighted_random", "uniform_random" or "best_move".
+    #  names:                              # List of names of books to use in bullet.
+    #    - FilteredWhite
     standard_black:
       selection: best_move                # Move selection is one of "weighted_random", "uniform_random" or "best_move".
       names:                              # List of names of books to use as black.
-        - epc
-    standard:
+        - FilteredBlack
+    standard_white:
       selection: best_move      # Move selection is one of "weighted_random", "uniform_random" or "best_move".
   #    max_depth: 40                       # Half move max depth. (Comment this line for max depth)
       names:                              # List of names of books to use if there is no specific book for the time control, white, black or chess960.
-       - default
-       - epc
+       - FilteredWhite
 #   Use the same pattern for 'bullet', 'blitz', 'rapid', 'classical',
 #   'antichess', 'atomic', 'chess960', 'crazyhouse', 'horde', 'kingofthehill', 'racingkings' and '3check' as well.
 #   Append '_white' or '_black' to use the books only as the specific color.
@@ -214,4 +213,4 @@ books:                                    # Names of the opening books (to be us
   default:  "./engines/default.bin"
   probook: "./engines/probook.bin"
   Opimus3.1: "./engines/optimus32.bin"
-  lila: "./engines/lila.bin"
+  FilteredBlack: "./engines/FilteredBlack.bin"
