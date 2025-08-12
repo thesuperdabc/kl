@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: 🚀 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 🐍 Setup Python 3.11
         uses: actions/setup-python@v4
@@ -84,7 +84,7 @@ jobs:
       TOKEN: ${{ secrets.LICHESS_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v4
         with:
           python-version: '3.11'
